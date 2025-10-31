@@ -9,21 +9,16 @@ import UIKit
 import SnapKit
 
 
-class TodoListViewController: UIViewController, UITableViewDataSource {
+class TodoListViewController: UIViewController {
 
     let tableView = UITableView()
-    struct ToDoItem {
-        var isDone: Bool;
-        let title: String;
-        
-    }
     var items: [ToDoItem] = [
         ToDoItem(isDone: false, title:  "Купить сыр"),
         ToDoItem(isDone: true,
                  title:  "Банальные, но неопровержимые выводы, а также акционеры крупнейших компаний и по...")
     ]
     
-    
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,15 +26,24 @@ class TodoListViewController: UIViewController, UITableViewDataSource {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "My tasks"
         view.backgroundColor = UIColor(named: "bgColor")
+        
 
         setupTableView()
         makeConstaints()
         
+        
     }
+    
+    
+   
+   
     
     func setupTableView() {
         tableView.register(ToDoItemTableViewCell.self, forCellReuseIdentifier: "my cell")
+        tableView.register(ToDoListHeaderView.self, forHeaderFooterViewReuseIdentifier: "my header")
+        tableView.register(ToDoListFooterView.self, forHeaderFooterViewReuseIdentifier: "my footer")
         tableView.dataSource = self
+        tableView.delegate = self
         tableView.backgroundColor = UIColor(named: "bgColor")
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 70
@@ -59,6 +63,12 @@ class TodoListViewController: UIViewController, UITableViewDataSource {
         
     }
     
+
+
+}
+
+
+extension TodoListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return items.count
     }
@@ -80,6 +90,19 @@ class TodoListViewController: UIViewController, UITableViewDataSource {
         return cell
 
     }
-
 }
 
+extension TodoListViewController: UITableViewDelegate{
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int ) -> UIView? {
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "my header") as! ToDoListHeaderView
+        view.configure(with: items.count)
+        return view
+
+    }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "my footer") as! ToDoListFooterView
+        
+        return view
+    }
+}

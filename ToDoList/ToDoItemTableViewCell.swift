@@ -27,6 +27,7 @@ class ToDoItemTableViewCell: UITableViewCell {
         
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
+        setNeedsUpdateConstraints()
         
       
         
@@ -98,22 +99,33 @@ class ToDoItemTableViewCell: UITableViewCell {
 
     func configure(with title: String, isCompleted: Bool, toggleHandler: @escaping () -> Void) {
         self.toggleHandler = toggleHandler
-        
         titleLabel.text = title
+
         let imageName = isCompleted ? "checkmark.circle.fill" : "circle"
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 32, weight: .regular)
-        checkMark.setImage(UIImage(systemName: imageName, withConfiguration: largeConfig), for: .normal)
+
+        let image = UIImage(systemName: imageName, withConfiguration: largeConfig)
+        checkMark.setImage(image, for: .normal)
+
+        checkMark.tintColor = isCompleted ? .systemGreen : .gray
         
+
         if isCompleted {
+            titleLabel.textColor = .systemGray
             let attributedString = NSAttributedString(
                 string: title,
                 attributes: [.strikethroughStyle: NSUnderlineStyle.single.rawValue]
             )
             titleLabel.attributedText = attributedString
+          
         } else {
+            titleLabel.textColor = .black
             titleLabel.attributedText = NSAttributedString(string: title)
+           
         }
+        
     }
+
 
     
     override func updateConstraints() {
