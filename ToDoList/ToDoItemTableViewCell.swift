@@ -12,7 +12,7 @@ class ToDoItemTableViewCell: UITableViewCell {
     
     var toggleHandler: (() -> Void)?
 
-    let checkMark = UIButton()
+    let checkMarkButton = UIButton()
     let titleLabel =  UILabel()
     let chevronRightIcon = UIButton(type: .system)
 
@@ -41,13 +41,14 @@ class ToDoItemTableViewCell: UITableViewCell {
     required init?(coder:NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
+    
 
     
     func setTableElements() {
-        contentView.addSubview(checkMark)
-        checkMark.tintColor = UIColor(named: "borderColor")
-        checkMark.addTarget(self, action: #selector(toggleList), for: .touchUpInside)
+        contentView.addSubview(checkMarkButton)
+        checkMarkButton.tintColor = UIColor(named: "borderColor")
+        checkMarkButton.addTarget(self, action: #selector(toggleList), for: .touchUpInside)
         
         contentView.addSubview(titleLabel)
         titleLabel.numberOfLines = 0
@@ -74,7 +75,7 @@ class ToDoItemTableViewCell: UITableViewCell {
                    
                     }
 
-            checkMark.snp.makeConstraints { make in
+            checkMarkButton.snp.makeConstraints { make in
                         make.centerY.equalToSuperview()
                         make.leading.equalToSuperview().offset(16)
                         make.width.height.equalTo(24)
@@ -82,7 +83,7 @@ class ToDoItemTableViewCell: UITableViewCell {
 
             titleLabel.snp.makeConstraints { make in
                         make.top.bottom.equalToSuperview().inset(18)
-                        make.leading.equalTo(checkMark.snp.trailing).offset(12)
+                        make.leading.equalTo(checkMarkButton.snp.trailing).offset(12)
                         make.trailing.equalToSuperview().offset(-12)
                     }
             
@@ -101,15 +102,14 @@ class ToDoItemTableViewCell: UITableViewCell {
 
     func configure(with title: String, isCompleted: Bool, toggleHandler: @escaping () -> Void) {
         self.toggleHandler = toggleHandler
-        titleLabel.text = title
 
         let imageName = isCompleted ? "checkmark.circle.fill" : "circle"
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 32, weight: .regular)
 
         let image = UIImage(systemName: imageName, withConfiguration: largeConfig)
-        checkMark.setImage(image, for: .normal)
+        checkMarkButton.setImage(image, for: .normal)
 
-        checkMark.tintColor = isCompleted ? .systemGreen : .gray
+        checkMarkButton.tintColor = isCompleted ? .systemGreen : .gray
         
 
         if isCompleted {
@@ -134,6 +134,9 @@ class ToDoItemTableViewCell: UITableViewCell {
 
         super.updateConstraints()
     }
+    
+    
+
     
 
 }
