@@ -103,13 +103,16 @@ class ToDoItemTableViewCell: UITableViewCell {
     func configure(with title: String, isCompleted: Bool, toggleHandler: @escaping () -> Void) {
         self.toggleHandler = toggleHandler
 
+
         let imageName = isCompleted ? "checkmark.circle.fill" : "circle"
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 32, weight: .regular)
 
         let image = UIImage(systemName: imageName, withConfiguration: largeConfig)
+
         checkMarkButton.setImage(image, for: .normal)
 
         checkMarkButton.tintColor = isCompleted ? .systemGreen : .gray
+
         
 
         if isCompleted {

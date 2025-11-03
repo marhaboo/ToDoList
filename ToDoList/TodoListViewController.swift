@@ -22,10 +22,7 @@ class TodoListViewController: UIViewController {
     let toolbar = UIToolbar()
     let addButton = UIBarButtonItem()
 
-    
-    
 
-    
     override func viewDidLoad() {
         super.viewDidLoad()
   
@@ -40,8 +37,10 @@ class TodoListViewController: UIViewController {
 
         
         
+        
     }
     
+
     func setUpToolbar() {
         view.addSubview(toolbar)
         
@@ -58,7 +57,6 @@ class TodoListViewController: UIViewController {
         button.layer.cornerRadius = 20
         button.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
         button.addTarget(self, action: #selector(addNewTask), for: .touchUpInside)
-
         let addButtonItem = UIBarButtonItem(customView: button)
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         toolbar.items = [flexibleSpace, addButtonItem, flexibleSpace]
@@ -71,9 +69,6 @@ class TodoListViewController: UIViewController {
           let openVC = addViewController()
         present(openVC, animated: true)
        }
-        
-   
-   
     
     func setupTableView() {
         tableView.register(ToDoItemTableViewCell.self, forCellReuseIdentifier: "my cell")
@@ -149,5 +144,7 @@ extension TodoListViewController: UITableViewDelegate{
         return view
 
     }
+
+
 
 }
