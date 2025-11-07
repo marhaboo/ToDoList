@@ -8,7 +8,7 @@
 
 struct ToDoItem {
     var isDone: Bool;
-    let title: String;
+    var title: String;
     
 }
 

@@ -12,6 +12,7 @@ class ToDoItemTableViewCell: UITableViewCell {
     
     var toggleHandler: (() -> Void)?
 
+    let divider = UIView()
     let checkMarkButton = UIButton()
     let titleLabel =  UILabel()
     let chevronRightIcon = UIButton(type: .system)
@@ -53,6 +54,9 @@ class ToDoItemTableViewCell: UITableViewCell {
         contentView.addSubview(titleLabel)
         titleLabel.numberOfLines = 0
         
+        divider.backgroundColor = .systemGray
+        contentView.addSubview(divider)
+        
         contentView.addSubview(chevronRightIcon)
         chevronRightIcon.tintColor = UIColor(named: "borderColor")
         let chevronConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
@@ -83,9 +87,15 @@ class ToDoItemTableViewCell: UITableViewCell {
 
             titleLabel.snp.makeConstraints { make in
                         make.top.bottom.equalToSuperview().inset(18)
-                        make.leading.equalTo(checkMarkButton.snp.trailing).offset(12)
-                        make.trailing.equalToSuperview().offset(-12)
+                        make.leading.equalTo(checkMarkButton.snp.trailing).offset(16)
+                        make.trailing.equalToSuperview().offset(-28)
                     }
+            divider.snp.makeConstraints { make in
+                make.height.equalTo(0.5)
+                make.trailing.equalToSuperview()
+                make.bottom.equalToSuperview()
+                make.leading.equalTo(titleLabel)
+            }
             
             chevronRightIcon.snp.makeConstraints { make in          
                 make.centerY.equalToSuperview()
