@@ -10,8 +10,10 @@ import UIKit
 class AddViewController: UIViewController {
     
     var item: ToDoItem?
-    var onSave: ((ToDoItem) -> Void)?
-    var onDeleteTask: ((ToDoItem) -> Void)?
+    weak var delegate: AddViewControllerDelegate?
+    var dataBaseManager: DataBaseManager?
+      
+       
     
     
     // MARK: - UI
@@ -62,21 +64,24 @@ class AddViewController: UIViewController {
     @objc func saveButtonTapped(_ sender: Any) {
         let titleText: String
         if let cell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? TextViewTableViewCell {
-            titleText = cell.todoTextView.text ?? ""
-        } else {
-            titleText = ""
-        }
+                    titleText = cell.todoTextView.text ?? ""
+                } else {
+                    titleText = ""
+                }
+        
+        if let existingItem = item {
+                  existingItem.title = titleText
+                  delegate?.addViewController(self, didSave: existingItem)
+              } else {
+                  guard let context = dataBaseManager?.context else {return}
+                   
+                  let newItem = ToDoItem(context: context)
+                  newItem.title = titleText
+                  newItem.isDone = false
+                  delegate?.addViewController(self, didSave: newItem)
+              }
+          }
 
-        if var existingItem = item {
-            existingItem.title = titleText
-            onSave?(existingItem)
-        } else {
-            let newItem = ToDoItem(isDone: false, title: titleText)
-            onSave?(newItem)
-        }
-
-        dismiss(animated: true)
-    }
 
     
     func makeConstraints() {
@@ -128,18 +133,8 @@ extension AddViewController: UITableViewDataSource {
             cell.selectionStyle = .none
             cell.backgroundColor = .clear
             cell.onDeleteTapped = { [weak self] in
-                guard let self = self else {return}
-                self.dismiss(animated: true)
-            }
-            if let item = item {
-                cell.onDeleteTapped = { [weak self] in
-                    self?.onDeleteTask?(item)
-                    self?.dismiss(animated: true)
-                }
-            } else {
-                cell.onDeleteTapped = { [weak self] in
-                    self?.dismiss(animated: true)
-                }
+                guard let self = self, let item = self.item else {return}
+                self.delegate?.addViewController(self, didDelete: item)
             }
 
             return cell

@@ -9,22 +9,45 @@ import UIKit
 import SnapKit
 
 
-class TodoListViewController: UIViewController {
+class TodoListViewController: UIViewController, AddViewControllerDelegate {
+    func addViewController(_ controller: AddViewController, didSave item: ToDoItem) {
+        items.append(item)
+        dataBaseManager.saveContext()
+        tableView.reloadData()
+        
+        controller.dismiss(animated: true)
+    }
+    
+    func addViewController(_ controller: AddViewController, didDelete item: ToDoItem) {
+        deleteItem(item)
+        controller.dismiss(animated: true)
+    }
 
+    
+
+   
+    var items: [ToDoItem] = [ ]
+    
     let tableView = UITableView(frame: .zero, style: .grouped)
-    var items: [ToDoItem] = [
-        ToDoItem(isDone: false, title:  "Купить сыр"),
-        ToDoItem(isDone: true,
-                 title:  "Банальные, но неопровержимые выводы, а также акционеры крупнейших компаний и по..."),
-        ToDoItem(isDone: true, title: "Задание")
-    ]
- 
     let toolbar = UIToolbar()
     let addButton = UIBarButtonItem()
-
+    
+    let dataBaseManager: DataBaseManager
+    let todoItem: [ToDoItem] = []
+    
+    init(dataBaseManager: DataBaseManager) {
+        self.dataBaseManager = dataBaseManager
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
   
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "My tasks"
@@ -34,9 +57,8 @@ class TodoListViewController: UIViewController {
         setupTableView()
         setUpToolbar()
         makeConstaints()
+        reloadData()
 
-        
-        
         
     }
     
@@ -74,35 +96,25 @@ class TodoListViewController: UIViewController {
          showAddEditScreen(for: nil)
        }
     
+    func deleteItem(_ item: ToDoItem) {
+        dataBaseManager.context.delete(item)
+        dataBaseManager.saveContext()
+
+        
+        if let index = items.firstIndex(where: { $0.objectID == item.objectID }) {
+             items.remove(at: index)
+             tableView.reloadData()
+         }
+    }
+ 
+    
 
     
     func showAddEditScreen(for item: ToDoItem?, at indexPath: IndexPath? = nil) {
         let addVC = AddViewController()
         addVC.item = item
-        
-        addVC.onSave = { [weak self] updatedItem in
-            guard let self = self else { return }
-            
-            if let indexPath = indexPath {
-                self.items[indexPath.row] = updatedItem
-                self.tableView.reloadRows(at: [indexPath], with: .automatic)
-            } else {
-                self.items.insert(updatedItem, at: 0)
-                self.tableView.reloadData()
-            }
-        }
-        
-        addVC.onDeleteTask = { [weak self] deleteItem in
-            guard let self = self else { return }
-            
-            if let index = self.items.firstIndex(where: { $0.title == deleteItem.title }) {
-
-                self.items.remove(at: index)
-            
-                self.tableView.deleteRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-            }
-        }
-
+        addVC.delegate = self
+        addVC.dataBaseManager = self.dataBaseManager
 
         let navController = UINavigationController(rootViewController: addVC)
         present(navController, animated: true)
@@ -145,6 +157,16 @@ class TodoListViewController: UIViewController {
 
 
 extension TodoListViewController: UITableViewDataSource {
+    
+    func reloadData() {
+        do {
+            let requset = ToDoItem.fetchRequest()
+            items = try dataBaseManager.context.fetch(requset)
+            tableView.reloadData()
+        } catch {
+            print(error)
+        }
+    }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     
@@ -154,47 +176,22 @@ extension TodoListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
       
-//        if indexPath.row == items.count {
-//            let cell = tableView.dequeueReusableCell(withIdentifier: "new cell", for: indexPath) as! NewItemTableViewCell
-//            cell.selectionStyle = .none
-//
-//     
-//            let isFirst = indexPath.row == 0
-//            let isLast = indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1
-//            cell.contentView.layer.cornerRadius = 22
-//            cell.contentView.layer.masksToBounds = true
-//
-//            if isFirst && !isLast {
-//                cell.contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-//            } else if isLast && !isFirst {
-//                cell.contentView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-//            } else if isFirst && isLast {
-//                cell.contentView.layer.maskedCorners = [
-//                    .layerMinXMinYCorner, .layerMaxXMinYCorner,
-//                    .layerMinXMaxYCorner, .layerMaxXMaxYCorner
-//                ]
-//            } else {
-//                cell.contentView.layer.cornerRadius = 0
-//            }
-//
-//            return cell
-//        }
-    
-
   
         let cell = tableView.dequeueReusableCell(withIdentifier: "my cell", for: indexPath) as! ToDoItemTableViewCell
         let item = items[indexPath.row]
 
 
-        cell.configure(with: item.title, isCompleted: item.isDone) { [weak self] in
+        cell.configure(with: item.title ?? "No task", isCompleted: item.isDone) { [weak self] in
             guard let self = self else { return }
-            self.items[indexPath.row].isDone.toggle()
+            let task = self.items[indexPath.row]
+            task.isDone.toggle()
+            self.dataBaseManager.saveContext()
             self.tableView.reloadRows(at: [indexPath], with: .automatic)
         }
 
   
         let isFirst = indexPath.row == 0
-        let isLast = indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 2
+        let isLast = indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1
         cell.contentView.layer.cornerRadius = 22
         cell.contentView.layer.masksToBounds = true
 
@@ -214,8 +211,6 @@ extension TodoListViewController: UITableViewDataSource {
         return cell
     }
 }
-
-
 
 extension TodoListViewController: UITableViewDelegate{
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int ) -> UIView? {
@@ -240,6 +235,7 @@ extension TodoListViewController: UITableViewDelegate{
         let markAsCompleted = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, completionHandler  in
             guard let self = self else {return}
             self.items[indexPath.row].isDone.toggle()
+            self.dataBaseManager.saveContext()
             tableView.reloadRows(at: [indexPath], with: .automatic)
             completionHandler(true)
         }
@@ -254,17 +250,26 @@ extension TodoListViewController: UITableViewDelegate{
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let trash = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, deleteHandler in
-            guard let self = self else {return}
-            self.items.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
+            guard let self = self else { return }
+            let itemToDelete = self.items[indexPath.row]
+            self.deleteItem(itemToDelete)
             deleteHandler(true)
         }
         trash.image = UIImage(systemName: "trash")?.withTintColor(.white)
         trash.backgroundColor = .red
-        let configuration = UISwipeActionsConfiguration(actions: [trash])
-        return configuration
+        return UISwipeActionsConfiguration(actions: [trash])
     }
 
 
 
 }
+
+protocol AddViewControllerDelegate: AnyObject {
+    func addViewController(_ controller: AddViewController, didSave item: ToDoItem)
+    func addViewController(_ controller: AddViewController, didDelete item: ToDoItem)
+}
+
+
+
+
+    
