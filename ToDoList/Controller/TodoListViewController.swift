@@ -182,7 +182,7 @@ extension TodoListViewController: UITableViewDataSource {
 
 
         cell.configure(with: item.title ?? "No task", isCompleted: item.isDone) { [weak self] in
-            guard let self = self else { return }
+            guard let self = self, indexPath.row < self.items.count else { return }
             let task = self.items[indexPath.row]
             task.isDone.toggle()
             self.dataBaseManager.saveContext()
